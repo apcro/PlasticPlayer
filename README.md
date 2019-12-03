@@ -1,46 +1,49 @@
-Plastic Player
---------------
+SlideBox Player
+---------------
 
-![Image of Plastic Player showing John Coltrane being played](plasticplayer.jpg?raw=true)
+An implementation of [Brendan Dawes' Plastic Player](https://github.com/brendandawes/PlasticPlayer) inside a Wooden Slide Box.
 
-An NFC based controller for Spotify using the Mopidy Server. This isn't a step by step instructables style build guide but hopefully there's enough information here to build your own version. Knowledge of building stuff like this, soldering and understanding JSON files and the like would be good.
+![Image if SlideBox Player](slideboxplayer.jpg?raw=true)
+
+An NFC based controller for playing local files from MusicBox using the Mopidy Server.
 
 Materials
 ---------
 
-* [ Raspberry Pi ](http://raspberrypi.org)
+* [ Raspberry Pi 3B ](http://raspberrypi.org) (Note: Raspberry Pi 4 will not work for this project if you want to use the JustBoom DAC HAT)
 * [ Pi Musicbox ](http://www.pimusicbox.com)
 * [ Espruino Wifi ](https://www.espruino.com)
+* JustBoom [ DAC HAT ](https://www.justboom.co/product/justboom-dac-hat/) (Raspberry Pi A+, B+, 2B or 3B only)
 * Adafruit [ 128 x 32 SPI OLED ](https://www.adafruit.com/product/661)
 * [ PN532 NFC breakout ](https://www.espruino.com/PN532)
-* 2 x [ Sanwa Arcade Buttons ](https://www.arcadeworlduk.com/products/Sanwa-OBSC-24-C-Arcade-Button.html)
-* [ Adafruit half-sized Perma Proto board ](https://www.adafruit.com/product/571)
-* [ Adafruit Neopixel breadboard ](https://www.adafruit.com/product/1558)
+* 3 x [ TTP223 Capacitive Touch Sensors ](https://www.amazon.co.uk/DollaTek-Capacitive-Settable-Self-lock-No-lock/dp/B07DK3DFR2/)
+* [ Adafruit half-sized breadboard ](https://www.adafruit.com/product/64)
 * [Panel Mount Micro USB](https://uk.rs-online.com/web/p/micro-usb-connectors/9125114/)
-* 3D printed enclosure (available on this repo)
-* A Pro Spotify account
 * [ NFC Stickers ](http://zipnfc.com/nfc-stickers/nfc-sticker-midas-tiny-ntag213.html)
-* 35mm Blank Slides - via Ebay or other suppliers
+* 35mm Blank Slides - via eBay or other suppliers
+* A wooden Slide Box - via eBay.
+
+This player was built using an Adafruit breadboard, it could just as easily be built using a Perma Proto board.
 
 How it Works
 ------------
 
-[Watch the Video](https://vimeo.com/251775077)
-
-Plastic Player has two main components — A Raspberry Pi running the Musicbox system and an Espruino WiFi based controller. 
+SlideBox Player has two main components — A Raspberry Pi running the Musicbox system and an Espruino WiFi based controller. 
 
 The Raspberry Pi manages and plays the music and it's this you'll connect to your stereo system. 
 
-The controller is what you can build with this repo. The controller uses 35mm photographic slides with NFC stickers to play anything on Spotify. This uses an Espruino Wifi board. Of course you don't have to use 35mm slides — it could be anything you can put an NFC sticker onto.
+The controller is what you can build with this repo. The controller uses 35mm photographic slides with NFC stickers to play anything you have configured and stored on your MusicBox. This imlpementation uses an Espruino Wifi board to detect NFC cards and issue commands to MusicBox. Of course you don't have to use 35mm slides — it could be anything you can put an NFC sticker onto.
 
-When you power up the Plastic Player the Espruino connects to your WiFi network and pulls down data in the form of a JSON file — I use [Airtable](http://airtable.com) as a simple solution but you could use anything, even a flat text file, as long as it's JSON formatted in the correct way. This JSON file contains a list of NFC tag ids with matching Spotify URIs — these are your albums. When you place an album (slide) into Plastic Player, the Espruino sees the NFC tag and looks-up that tag in the JSON file.  When it finds a match it sends the corresponding Spotify URI to the Musicbox over wifi and then starts that track list playing. Plastic Player also includes controls for play/pause and skip (next track).
+When you power up the SlideBox Player the Espruino connects to your WiFi network and pulls down data in the form of a JSON file from your MusicBox — see [MUSICBOX](MUSICBOX.md) for detailed instructions on storing your music file on your MusicBox Raspberry Pi. This JSON file contains a list of NFC tag ids with matching MusicBox URIs — these are your albums. When you place an album (slide) into the SlideBox Player, the Espruino sees the NFC tag and looks-up that tag in the JSON file.  When it finds a match it sends the corresponding MusicBox URI to the Musicbox over wifi and then starts that track list playing. SlideBox Player also includes controls for play/pause, skip (next track) and rewind (previous track).
 
 Raspberry Pi
 ------------
 
-Install Musicbox on a Raspberry Pi following the instructions on the Musicbox site including entering your Spotify details. Once you have this set up, check you can connect to it via your web browser — usually via musicbox.local. 
+Install Musicbox on a Raspberry Pi 3 following the instructions on the Musicbox site. Once you have this set up, check you can connect to it via your web browser — usually via musicbox.local. 
 
 Make sure to note down the ip address of the Raspberry Pi as you'll need to enter this in the code for Espruino later. You can find this out via the Terminal by typing 'ping musicbox.local'. This will show the ip address of the Raspberry Pi you have running Musicbox.
+
+This implementation uses the Raspberry Pi +/- pins to power the Espruino, NFC and OLED, so if you have installed a JustBoom DAC HAT, you will also need to extend the +5/GND pins with wires.
 
 That’s all you need to do with the Raspberry Pi. 
 
@@ -48,44 +51,47 @@ That’s all you need to do with the Raspberry Pi.
 Espruino
 --------
 
-Solder the Espruino board in the centre of the Perma-Proto board.
+Place the Espruino board in the centre of the breadboard.
 
-Connect the - and + rails on the Perma-Proto to the 3.3v terminal and the GND terminal respectively.
+Connect the + and - power wires from the Raspberry Pi/DAC HAT to the BreadBoard + rail and the - rail respectively.
 
-Wire the components to the Espruino / Perma-proto using the following pin connections. 
+Wire the components to the Espruino using the following pin connections. 
 
 | OLED | Espruino Wifi |
 |------|---------------|
-| CS   | GND           |
-| RST  | b7            |
-| DC   | a0            |
-| CLK  | b5            |
-| DATA | b6            |
+| CS   | -             |
+| RST  | B7            |
+| DC   | A0            |
+| CLK  | B5            |
+| DATA | B6            |
 | 3.3  | 3.3           |
-| GND  | GND           |
-
-| Neo Pixel | Espruino Wifi |
-|-----------|---------------|
-| +         | 3.3           |
-| G         | GND           |
-| In        | b15           |
+| GND  | -             |
 
 | NFC  | Espruino Wifi |
 |------|---------------|
-| 3.3  | 3.3           |
-| MOSI | b3            |
-| SSEL | b10           |
-| GND  | GND           |
+| 3.3  | +             |
+| SCL  | B8            |
+| SDA  | B9            |
+| GND  | -             |
 
 | Pause Button | Espruino Wifi |
 |--------------|---------------|
-| +            | 3.3           |
-| -            | B1            |
+| VCC          | +             |
+| I/O          | B1            |
+| GND          | -             |
 
 | Next Button | Espruino Wifi |
 |-------------|---------------|
-| +           | 3.3           |
-| -           | B14           |
+| VCC         | +             |
+| I/O         | B14           |
+| GND         | -             |
+
+| Prev Button | Espruino Wifi |
+|-------------|---------------|
+| VCC         | +             |
+| I/O         | B13           |
+| GND         | -             |
+
 
 Code
 ----
@@ -94,26 +100,32 @@ Download the Javascript code from this repo. Plug-in your Espruino and using the
 
 Transfer the code to your Espruino. Hopefully it should start up and work as expected.
 
+Common Espruino Issues
+======================
+
+* If you cannot connect to your Espruino via USB, make sure you are _not_ in Bootloader mode (pulsing red/green LEDs is bootloader mode).
+* If your saved code does not automatically start, make sure to type `save()` in the Espruino console once you have uploaded your code.
+
 Enclosure
 ---------
 
-You can enclose this project in whatever you see fit but I've included the .stl files for you to use and either print at home of send to a service such as Shapeways to create the enclosure. Once you have that you can place the parts and then snap-fit the enclosure back together.
+You can enclose this project in whatever you see fit, in this case a wooden Slide Box found on eBay.
 
-To provide power to the Plastic Player, I used a panel mount female USB (see parts list above) which I then attached to another USB lead I had cut up, wiring the cut end to the panel mount USB and plugging the male end into the Espruino as normal.
+To provide power to the SlideBox Player, I used a normal Raspberry Pi power supply, with an inline switch and drilled through the back of the Slide Box..
 
 NFC Tags
 --------
 
-Place an NFC tag on a slide and place it into the Plastic Player. Any unknown tags will display the tag ID on the OLED display. You can then use this information in the JSON file (see below).
+Place an NFC tag on a slide and place it into the SlideBox Player. Any unknown tags will display the tag ID on the OLED display. You can then use this information in the JSON file (see below).
 
 Setting up the database of albums
 ---------------------------------
 
-Plastic Player consults a JSON file to match NFC tags with Spotify albums URIs. An example JSON schema is included in this repo. I use Airtable to easily manage and serve this file but you can use whatever you want as long as it's web accessible. 
+SlideBox Player consults a JSON file to match NFC tags with MusicBox albums URIs. An example JSON schema is included in this repo. See [ MUSICBOX ](MUSICBOX.md) for more details.
 
-Construct your JSON file using the tag IDs and the corresponding Spotify URIs.
+Construct your JSON file using the tag IDs and the corresponding MusicBox local URIs.
 
-Once you have this JSON file done and existing on the web, and that location is in the PATH variable as detailed above, then when you place the relevant NFC tag into the Plastic Player it should talk to the Musicbox and play!
+Once you have this JSON file done and existing on your MusicBox, and that location is in the PATH variable as detailed above, then when you place the relevant NFC tag into the SlideBox Player it should talk to the Musicbox and play!
 
 
 
