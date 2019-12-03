@@ -3,7 +3,7 @@ SlideBox Player
 
 An implementation of [Brendan Dawes' Plastic Player](https://github.com/brendandawes/PlasticPlayer) inside a Wooden Slide Box.
 
-![Image if SlideBox Player](slideboxplayer.jpg?raw=true)
+![Image of SlideBox Player](slideboxplayer.jpg?raw=true)
 
 An NFC based controller for playing local files from MusicBox using the Mopidy Server.
 
